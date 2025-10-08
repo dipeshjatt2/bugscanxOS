@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=BugscanxOS
+Description=Bugscanx Boot Theme
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/bugscanx
+ScriptFile=/usr/share/plymouth/themes/bugscanx/bugscanx.script
