@@ -1,9 +1,0 @@
-# File: auto/config
-
-#!/bin/sh
-lb config noauto \
-    --architecture amd64 \
-    --distribution bookworm \
-    --archive-areas "main contrib non-free non-free-firmware" \
-    --image-name "bugscanxOS-1.0" \
-    "$@"
