@@ -1,0 +1,75 @@
+image:
+  name: bugscanxos.iso
+  format: iso
+
+tasks:
+  - name: Base System
+    type: debootstrap
+    suite: bookworm
+    arch: amd64
+    target: rootfs
+    mirror: http://deb.debian.org/debian
+
+  - name: Install Desktop and Core Packages
+    type: apt
+    packages:
+      - systemd-sysv
+      - task-xfce-desktop
+      - lightdm
+      - plymouth
+      - plymouth-themes
+      - grub-pc-bin
+      - grub-efi-amd64-bin
+      - grub2-common
+      - python3
+      - python3-pip
+      - network-manager
+      - xorg
+      - sudo
+      - curl
+      - git
+      - xorriso
+
+  - name: Copy Branding Files
+    type: copy
+    src: files/
+    dest: /
+
+  - name: Apply Branding
+    type: run
+    chroot: rootfs
+    script: |
+      echo "bugscanxOS" > /etc/hostname
+      useradd -m -s /bin/bash bugscanx
+      echo "bugscanx:bugscanx" | chpasswd
+      usermod -aG sudo bugscanx
+
+      # --- Install bugscan-x pip module ---
+      pip3 install bugscan-x
+
+      # --- Wallpaper setup ---
+      mkdir -p /usr/share/images/desktop-base/
+      cp /wallpaper.jpg /usr/share/images/desktop-base/bugscanx.jpg
+      ln -sf /usr/share/images/desktop-base/bugscanx.jpg /usr/share/backgrounds/xfce/default.jpg
+
+      # --- Plymouth theme setup ---
+      mkdir -p /usr/share/plymouth/themes/bugscanx/
+      cp /plymouth-theme/*  /usr/share/plymouth/themes/bugscanx/
+      update-alternatives --install /usr/share/plymouth/themes/default.plymouth default.plymouth /usr/share/plymouth/themes/bugscanx/bugscanx.plymouth 100
+      update-alternatives --set default.plymouth /usr/share/plymouth/themes/bugscanx/bugscanx.plymouth
+      update-initramfs -u
+
+      # --- GRUB splash image ---
+      cp /grub/splash.png /usr/share/images/desktop-base/bugscanx-grub.png
+      echo 'GRUB_BACKGROUND="/usr/share/images/desktop-base/bugscanx-grub.png"' >> /etc/default/grub
+      update-grub
+
+  - name: Create SquashFS
+    type: squashfs
+    src: rootfs
+    dest: image/filesystem.squashfs
+
+  - name: Build Bootable ISO
+    type: run
+    script: |
+      grub-mkrescue -o /artifacts/bugscanxos.iso /usr/lib/grub/i386-pc
