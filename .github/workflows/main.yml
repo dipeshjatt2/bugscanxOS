@@ -1,46 +1,39 @@
-# A descriptive name for your workflow
+# File: .github/workflows/build.yml
+
 name: Build bugscanxOS
 
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push events but only for the "main" branch
   push:
     branches: [ "main" ]
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build-iso"
   build-iso:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # 1. Checks out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Check out repository
         uses: actions/checkout@v4
 
-      # 2. Install the necessary build tools (Debian Live Build)
       - name: Install Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y live-build
 
-      # 3. Make the custom hook script executable so it can be run during the build
       - name: Make Hook Executable
         run: chmod +x config/hooks/live/99-customizations.chroot
 
-      # 4. Run the main build command to create the OS image
+      # --- NEW STEP ADDED HERE ---
+      # Clean any previous build artifacts and caches to ensure a fresh start
+      - name: Clean Build Cache
+        run: sudo lb clean --purge
+
+      # Run the build process
       - name: Build the ISO
         run: sudo lb build
 
-      # 5. Upload the final ISO file as a downloadable artifact
+      # Upload the final ISO file
       - name: Upload ISO Artifact
         uses: actions/upload-artifact@v4
         with:
           name: bugscanxOS-1.0-amd64.iso
           path: live-image-amd64.hybrid.iso
-
