@@ -1,3 +1,5 @@
+# File: auto/config
+
 #!/bin/sh
 lb config noauto \
     --architecture amd64 \
