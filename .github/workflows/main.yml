@@ -1,0 +1,41 @@
+name: Build BugscanxOS GUI ISO
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y debootstrap debos qemu-user-static \
+              squashfs-tools xorriso grub-pc-bin grub-efi-amd64-bin mtools python3-pip
+
+      - name: Build ISO using debos
+        working-directory: debos
+        run: |
+          mkdir -p ../artifacts
+          sudo debos --root-cache=../cache recipe.yaml
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bugscanxos-iso
+          path: artifacts/bugscanxos.iso
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "v${{ github.run_number }}"
+          name: "BugscanxOS GUI Build ${{ github.run_number }}"
+          body: "Automated GUI release built from commit ${{ github.sha }}"
+          files: "artifacts/bugscanxos.iso"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
