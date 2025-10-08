@@ -14,6 +14,14 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      # --- NEW DEBUGGING STEP ---
+      # This will print the contents of your config file to the log.
+      - name: Display Configuration File
+        run: |
+          echo "--- Contents of auto/config ---"
+          cat auto/config
+          echo "-----------------------------"
+
       - name: Install Dependencies
         run: |
           sudo apt-get update
@@ -22,16 +30,12 @@ jobs:
       - name: Make Hook Executable
         run: chmod +x config/hooks/live/99-customizations.chroot
 
-      # --- NEW STEP ADDED HERE ---
-      # Clean any previous build artifacts and caches to ensure a fresh start
       - name: Clean Build Cache
         run: sudo lb clean --purge
 
-      # Run the build process
       - name: Build the ISO
         run: sudo lb build
 
-      # Upload the final ISO file
       - name: Upload ISO Artifact
         uses: actions/upload-artifact@v4
         with:
