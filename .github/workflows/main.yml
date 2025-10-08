@@ -1,45 +1,46 @@
-name: Build bugscanxOS
+name: SSH Bot Hosting
 
 on:
-  push:
-    branches: [ "main" ]
-  workflow_dispatch:
+  workflow_dispatch: # manually trigger it from GitHub Actions tab
 
 jobs:
-  build-iso:
+  ssh-host:
     runs-on: ubuntu-latest
+    timeout-minutes: 9999 # keep it alive for long time
+
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Display Configuration File
+      - name: Set up environment
         run: |
-          echo "--- Contents of auto/config ---"
-          cat auto/config
-          echo "-----------------------------"
+          sudo apt update -y
+          sudo apt install -y openssh-server
 
-      - name: Install Dependencies
+      - name: Start SSH Server
         run: |
-          sudo apt-get update
-          sudo apt-get install -y live-build
+          sudo systemctl enable ssh
+          sudo systemctl start ssh
 
-      - name: Make Hook Executable
-        run: chmod +x config/hooks/live/99-customizations.chroot
-
-      # --- UPDATED AND MORE AGGRESSIVE CLEANING STEP ---
-      - name: Force Clean Build Cache
+      - name: Create SSH User
         run: |
-          echo "Forcibly removing old build directories if they exist..."
-          sudo rm -rf .build cache chroot binary
-          echo "Running lb clean..."
-          sudo lb clean --purge
+          sudo useradd -m botuser
+          echo 'botuser:botpass' | sudo chpasswd
+          sudo usermod -aG sudo botuser
+          echo "✅ SSH user 'botuser' with password 'botpass' created."
 
-      - name: Build the ISO
-        run: sudo lb build
+      - name: Display SSH connection details
+        run: |
+          echo "=============================================="
+          echo "🔑 SSH Connection Details"
+          echo "Host: $(curl -s ifconfig.me)"
+          echo "Username: botuser"
+          echo "Password: botpass"
+          echo "To connect, run:"
+          echo "ssh botuser@$(curl -s ifconfig.me)"
+          echo "=============================================="
 
-      - name: Upload ISO Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: bugscanxOS-1.0-amd64.iso
-          path: live-image-amd64.hybrid.iso
-
+      - name: Keep SSH Alive (Ping Google)
+        run: |
+          echo "🏃 Keeping runner alive... press Ctrl+C to stop workflow manually."
+          while true; do
+            ping -c 5 google.com
+            sleep 30
+          done
