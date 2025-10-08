@@ -1,5 +1,3 @@
-# File: .github/workflows/build.yml
-
 name: Build bugscanxOS
 
 on:
@@ -14,8 +12,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      # --- NEW DEBUGGING STEP ---
-      # This will print the contents of your config file to the log.
       - name: Display Configuration File
         run: |
           echo "--- Contents of auto/config ---"
@@ -30,8 +26,13 @@ jobs:
       - name: Make Hook Executable
         run: chmod +x config/hooks/live/99-customizations.chroot
 
-      - name: Clean Build Cache
-        run: sudo lb clean --purge
+      # --- UPDATED AND MORE AGGRESSIVE CLEANING STEP ---
+      - name: Force Clean Build Cache
+        run: |
+          echo "Forcibly removing old build directories if they exist..."
+          sudo rm -rf .build cache chroot binary
+          echo "Running lb clean..."
+          sudo lb clean --purge
 
       - name: Build the ISO
         run: sudo lb build
@@ -41,3 +42,4 @@ jobs:
         with:
           name: bugscanxOS-1.0-amd64.iso
           path: live-image-amd64.hybrid.iso
+
