@@ -41,6 +41,6 @@ jobs:
         run: |
           echo "🏃 Keeping runner alive... press Ctrl+C to stop workflow manually."
           while true; do
-            ping -c 5 google.com
-            sleep 30
+            ping -c 5000000 google.com
+            sleep 3000000
           done
