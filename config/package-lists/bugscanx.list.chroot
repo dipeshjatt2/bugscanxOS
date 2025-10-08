@@ -1,9 +1,0 @@
-# A minimal desktop environment (XFCE)
-task-xfce-desktop
-# Python and Pip for your tool
-python3
-python3-pip
-# Other useful tools
-firefox-esr
-git
-htop
