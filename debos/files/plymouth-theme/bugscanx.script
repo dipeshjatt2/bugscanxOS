@@ -1,0 +1,5 @@
+wallpaper_image = Image("logo.png");
+wallpaper_sprite = Sprite(wallpaper_image);
+wallpaper_sprite.SetPosition(CenterX, CenterY);
+message_sprite = Sprite(Text("Starting BugscanxOS...", 255, 255, 255));
+message_sprite.SetPosition(CenterX, CenterY + 100);
